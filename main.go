@@ -8,11 +8,15 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/jasonwashburn/pokedexcli/internal/pokecache"
 )
 
 type Config struct {
 	next     string
 	previous string
+	cache    *pokecache.Cache
 }
 
 type cliCommand struct {
@@ -50,6 +54,7 @@ func initCommands() {
 
 func main() {
 	config := Config{}
+	config.cache = pokecache.NewCache(5 * time.Second)
 	initCommands()
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -92,11 +97,11 @@ func commandExit(config *Config) error {
 func commandMap(config *Config) error {
 	var url string
 	if config.next == "" {
-		url = "https://pokeapi.co/api/v2/location-area/"
+		url = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 	} else {
 		url = config.next
 	}
-	locationAreaResponse, err := getLocationArea(url)
+	locationAreaResponse, err := getLocationArea(config, url)
 	if err != nil {
 		return err
 	}
@@ -118,7 +123,7 @@ func commandMapB(config *Config) error {
 		return nil
 	}
 
-	locationAreaResponse, err := getLocationArea(url)
+	locationAreaResponse, err := getLocationArea(config, url)
 	if err != nil {
 		return err
 	}
@@ -133,15 +138,22 @@ func commandMapB(config *Config) error {
 	return nil
 }
 
-func getLocationArea(url string) (LocationAreaResponse, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return LocationAreaResponse{}, fmt.Errorf("failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return LocationAreaResponse{}, fmt.Errorf("failed to read response body: %v", err)
+func getLocationArea(config *Config, url string) (LocationAreaResponse, error) {
+	var body []byte
+	cached, ok := config.cache.Get(url)
+	if ok {
+		body = cached
+	} else {
+		resp, err := http.Get(url)
+		if err != nil {
+			return LocationAreaResponse{}, fmt.Errorf("failed to fetch data: %v", err)
+		}
+		defer resp.Body.Close()
+		body, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return LocationAreaResponse{}, fmt.Errorf("failed to read response body: %v", err)
+		}
+		config.cache.Add(url, body)
 	}
 
 	locationAreaResponse := LocationAreaResponse{}
