@@ -5,9 +5,13 @@ type LocationArea struct {
 	Url  string
 }
 
-type LocationAreaResponse struct {
+type LocationAreaListResponse struct {
 	Count    int
 	Next     string
 	Previous string
 	Results  []LocationArea
+}
+
+type LocationAreaResponse struct {
+	PokemonEncounters []PokemonEncounter `json:"pokemon_encounters"`
 }
