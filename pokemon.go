@@ -19,6 +19,54 @@ type Pokemon struct {
 	ID             int    `json:"id"`
 	Name           string `json:"name"`
 	BaseExperience int    `json:"base_experience"`
+	Height         int    `json:"height"`
+	Weight         int    `json:"weight"`
+	Types          []Type `json:"types"`
+	Stats          []Stat `json:"stats"`
+}
+
+type Stat struct {
+	Stat     StatMetadata `json:"stat"`
+	BaseStat int          `json:"base_stat"`
+}
+
+type StatMetadata struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+func (p Pokemon) GetStats() map[string]int {
+	stats := make(map[string]int)
+	for _, stat := range p.Stats {
+		stats[stat.Stat.Name] = stat.BaseStat
+	}
+	return stats
+}
+
+func (p Pokemon) GetTypeNames() []string {
+	names := make([]string, len(p.Types))
+	for i, ptype := range p.Types {
+		names[i] = ptype.Type.Name
+	}
+	return names
+}
+
+type Ability struct {
+	Ability AbilityMetadata `json:"ability"`
+}
+
+type AbilityMetadata struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+type Type struct {
+	Type TypeMetadata `json:"type"`
+}
+
+type TypeMetadata struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 func getPokemonByName(config *Config, name string) (Pokemon, error) {

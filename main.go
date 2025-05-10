@@ -56,6 +56,11 @@ func initCommands() {
 			description: "Catch a Pokemon",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a Pokemon",
+			callback:    commandInspect,
+		},
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
@@ -232,6 +237,29 @@ func commandCatch(config *Config, args ...string) error {
 		fmt.Printf("%s was caught!\n", pokemonName)
 	} else {
 		fmt.Printf("%s escaped!\n", pokemonName)
+	}
+	return nil
+}
+
+func commandInspect(config *Config, args ...string) error {
+	pokemonName := args[0]
+	if pokemonName == "" {
+		return fmt.Errorf("no pokemon name provided")
+	}
+	pokemon, ok := config.pokedex[pokemonName]
+	if !ok {
+		return fmt.Errorf("pokemon not found in pokedex")
+	}
+	fmt.Printf("Name: %s\n", pokemon.Name)
+	fmt.Printf("Height: %d\n", pokemon.Height)
+	fmt.Printf("Weight: %d\n", pokemon.Weight)
+	fmt.Printf("Stats:\n")
+	for stat, value := range pokemon.GetStats() {
+		fmt.Printf("  -%s: %d\n", stat, value)
+	}
+	fmt.Printf("Types:\n")
+	for _, ptype := range pokemon.GetTypeNames() {
+		fmt.Printf("  -%s\n", ptype)
 	}
 	return nil
 }
