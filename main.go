@@ -61,6 +61,11 @@ func initCommands() {
 			description: "Inspect a Pokemon",
 			callback:    commandInspect,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Display your Pokedex",
+			callback:    commandPokedex,
+		},
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
@@ -260,6 +265,17 @@ func commandInspect(config *Config, args ...string) error {
 	fmt.Printf("Types:\n")
 	for _, ptype := range pokemon.GetTypeNames() {
 		fmt.Printf("  -%s\n", ptype)
+	}
+	return nil
+}
+
+func commandPokedex(config *Config, _ ...string) error {
+	//Your Pokedex:
+	//  - pidgey
+	//  - caterpie
+	fmt.Println("Your Pokedex:")
+	for pokemon := range config.pokedex {
+		fmt.Printf(" - %s\n", pokemon)
 	}
 	return nil
 }
